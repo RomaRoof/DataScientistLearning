@@ -6,7 +6,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import PassiveAggressiveClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 
-FILE_PATH = './DS'
+FILE_PATH = './dataset'
 df_news = pd.read_csv(f'{FILE_PATH}/fake_news.csv')
 
 df_news.drop_duplicates(inplace=True)
