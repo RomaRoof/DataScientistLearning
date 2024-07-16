@@ -16,7 +16,7 @@ def read_names(file_path):
     return column_names
 
 # Путь к файлам
-data_file = 'D:\Рома Учеба\Founder\DSHomeWork\DataScientistWork\dataset\parkinsons\parkinsons.data'
+data_file = 'D:\Learning\Founder\DSHomeWork\DataScientistWork\dataset\parkinsons\parkinsons.data'
 # Adaptive path to /data for git
 # FILE_PATH = '/data'
 # data_file = pd.read_csv(f'{FILE_PATH}/parkinsons.data')
