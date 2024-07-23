@@ -3,6 +3,7 @@ import aiosqlite
 # Зададим имя базы данных
 DB_NAME = 'quiz_bot.db'
 
+
 async def create_table():
     # Создаем соединение с базой данных (если она не существует, она будет создана)
     async with aiosqlite.connect(DB_NAME) as db:
@@ -11,6 +12,7 @@ async def create_table():
             '''CREATE TABLE IF NOT EXISTS quiz_state (user_id INTEGER PRIMARY KEY, question_index INTEGER)''')
         # Сохраняем изменения
         await db.commit()
+
 
 async def get_quiz_index(user_id):
     # Подключаемся к базе данных
@@ -23,6 +25,21 @@ async def get_quiz_index(user_id):
                 return results[0]
             else:
                 return 0
+
+
+async def save_result(user_id, score):
+    async with aiosqlite.connect(DB_NAME) as db:
+        await db.execute('INSERT INTO results (user_id, score) VALUES (?, ?)', (user_id, score))
+        await db.commit()
+
+
+async def get_user_statistics(user_id):
+    async with aiosqlite.connect(DB_NAME) as db:
+        async with db.execute('SELECT score, timestamp FROM results WHERE user_id = ? ORDER BY timestamp DESC',
+                              (user_id,)) as cursor:
+            results = await cursor.fetchall()
+            return results
+
 
 async def update_quiz_index(user_id, index):
     # Создаем соединение с базой данных (если она не существует, она будет создана)
