@@ -95,49 +95,52 @@ async def reset_quiz(user_id):
     await update_quiz_index(user_id, 0)
     await save_result(user_id, 0)
 
+
 def main_menu_keyboard():
     keyboard = ReplyKeyboardBuilder()
     keyboard.add(types.KeyboardButton(text="Начать игру"))
-    keyboard.add(types.KeyboardButton(text="Рейтинговая таблица"))
+    keyboard.add(types.KeyboardButton(text="Ваш результат"))
     return keyboard.as_markup(resize_keyboard=True)
 
 
 def in_game_keyboard():
     keyboard = ReplyKeyboardBuilder()
     keyboard.add(types.KeyboardButton(text="Завершить игру"))
-    keyboard.add(types.KeyboardButton(text="Рейтинговая таблица"))
+    keyboard.add(types.KeyboardButton(text="Ваш результат"))
     return keyboard.as_markup(resize_keyboard=True)
 
 
 def after_game_keyboard():
     keyboard = ReplyKeyboardBuilder()
     keyboard.add(types.KeyboardButton(text="Новая игра"))
-    keyboard.add(types.KeyboardButton(text="Рейтинговая таблица"))
+    keyboard.add(types.KeyboardButton(text="Ваш результат"))
     return keyboard.as_markup(resize_keyboard=True)
 
 
 async def cmd_start(message: types.Message):
     builder = ReplyKeyboardBuilder()
-    builder.add(types.KeyboardButton(text="Поехали"))
+    builder.add(types.KeyboardButton(text="Начать игру"))
     await message.answer("Добро пожаловать в квиз!", reply_markup=main_menu_keyboard())
 
 
 async def cmd_stop(message: types.Message):
     builder = ReplyKeyboardBuilder()
-    builder.add(types.KeyboardButton(text="Поехали"))
+    builder.add(types.KeyboardButton(text="Начать игру"))
     await message.answer("Спасибо что сыграли со мной! До новых встреч!",
-                         reply_markup=main_menu_keyboard())
+                         reply_markup=after_game_keyboard())
 
 
 async def cmd_quiz(message: types.Message):
     builder = ReplyKeyboardBuilder()
     builder.add(types.KeyboardButton(text="Завершить игру"))
-    await message.answer(f"Давайте начнем квиз!", reply_markup=main_menu_keyboard())
+    await message.answer(f"Давайте начнем квиз!", reply_markup=in_game_keyboard())
     await new_quiz(message)
 
 
 async def cmd_new_game(message: types.Message):
     user_id = message.from_user.id
+    builder = ReplyKeyboardBuilder()
+    builder.add(types.KeyboardButton(text="Начать игру"))
     await reset_quiz(user_id)
     await message.answer(f"Начнем новую игру!", reply_markup=in_game_keyboard())
     await new_quiz(message)
@@ -148,7 +151,7 @@ def register_handlers(dp: Dispatcher):
     dp.callback_query(F.data.startswith("wrong_answer_"))(wrong_answer)
     dp.message(Command("start"))(cmd_start)
     dp.message(F.text == "Начать игру")(cmd_quiz)
-    dp.message(F.text == "Рейтинговая таблица")(show_statistics)
+    dp.message(F.text == "Ваш результат")(show_statistics)
     dp.message(Command("stop"))(cmd_stop)
     dp.message(F.text == "Завершить игру")(cmd_stop)
     dp.message(F.text == "Новая игра")(cmd_new_game)
