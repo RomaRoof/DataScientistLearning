@@ -1,5 +1,6 @@
 import logging
-
+import pytz
+from datetime import datetime
 import aiosqlite
 
 # Зададим имя базы данных
@@ -17,7 +18,7 @@ async def create_table():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER,
                 score INTEGER,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                timestamp DATETIME
             )''')
         # Сохраняем изменения
         await db.commit()
@@ -38,12 +39,27 @@ async def get_quiz_index(user_id):
 
 async def save_result(user_id, score):
     logging.info(f"Сохранено в БАЗУ: user_id={user_id}, score={score}")
+
+    # Получаем текущее время в часовом поясе Екатеринбурга
+    ekb_timezone = pytz.timezone('Asia/Yekaterinburg')
+    local_time = datetime.now(ekb_timezone).strftime('%Y-%m-%d %H:%M:%S')
+
     async with aiosqlite.connect(DB_NAME) as db:
-        await db.execute('INSERT INTO results (user_id, score) VALUES (?, ?)', (user_id, score))
+        # Проверяем, существует ли запись для данного user_id
+        async with db.execute('SELECT 1 FROM results WHERE user_id = ?', (user_id,)) as cursor:
+            exists = await cursor.fetchone()
+
+        if exists:
+            # Если запись существует, обновляем счет и время
+            await db.execute('UPDATE results SET score = ?, timestamp = ? WHERE user_id = ?', (score, local_time, user_id))
+        else:
+            # Если записи не существует, создаем новую запись
+            await db.execute('INSERT INTO results (user_id, score, timestamp) VALUES (?, ?, ?)', (user_id, score, local_time))
+
         await db.commit()
 
 
-async def get_score(user_id):
+async def get_current_score(user_id):
     async with aiosqlite.connect(DB_NAME) as db:
         async with db.execute('SELECT score FROM results WHERE user_id = ? ORDER BY timestamp DESC LIMIT 1',
                               (user_id,)) as cursor:
@@ -53,11 +69,21 @@ async def get_score(user_id):
             else:
                 return 0
 
-
-async def get_current_score(user_id):
-    return await get_score(user_id)
-
-
+#async def save_result(user_id):
+#    async with aiosqlite.connect(DB_NAME) as db:
+#        async with db.execute('SELECT score FROM results WHERE user_id = ? ORDER BY timestamp DESC LIMIT 1', (user_id,)) as cursor:
+#            result = await cursor.fetchone()
+#            if result:
+#                current_score = result[0] + 1
+#                await db.execute('UPDATE results SET score = ?, timestamp = CURRENT_TIMESTAMP WHERE user_id = ?',
+#                                 (current_score, user_id))
+#            else:
+#                current_score = 1
+#                await db.execute('INSERT INTO results (user_id, score, timestamp) VALUES (?, ?, CURRENT_TIMESTAMP)',
+#                                 (user_id, current_score))
+#        await db.commit()
+#        return current_score
+#
 async def get_latest_results(user_id, limit=10):
     async with aiosqlite.connect(DB_NAME) as db:
         async with db.execute('SELECT score, timestamp FROM results WHERE user_id = ? ORDER BY timestamp DESC LIMIT ?',

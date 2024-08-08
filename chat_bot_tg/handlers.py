@@ -75,6 +75,7 @@ async def wrong_answer(callback: types.CallbackQuery):
         return current_score
 
 
+# Логгирование в терминале для контроля
 async def save_quiz_result(user_id, score):
     logging.info(f"Сохранение результата: user_id={user_id}, score={score}")
     await save_result(user_id, score)
@@ -84,7 +85,7 @@ async def show_statistics(message: types.Message):
     user_id = message.from_user.id
     latest_results = await get_latest_results(user_id)
     if latest_results:
-        response = "Последние 10 результатов:\n"
+        response = "Ваш результат:\n"
         for score, timestamp in latest_results:
             response += f"Очки: {score}, Дата: {timestamp}\n"
 
