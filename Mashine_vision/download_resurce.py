@@ -1,9 +1,11 @@
 import os
+
 import requests
 
-url = 'https://www.film.ru/sites/default/files/people/1457583-2618007.jpg'
+
+url = 'https://img11.rl0.ru/afisha/e2086x1180p291x0f1050x594q65i/s1.afisha.ru/mediastorage/56/4c/7fe45647591c4a088af9c4bf4c56.jpg'
 # Имя файла, под которым нужно сохранить изображение
-file_name = 'Ryan Reynolds.jpg'
+file_name = 'Keanu.jpg'
 
 # Проверка, существует ли файл
 if not os.path.exists(file_name):
